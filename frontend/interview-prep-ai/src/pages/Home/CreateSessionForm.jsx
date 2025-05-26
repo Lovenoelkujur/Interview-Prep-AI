@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Input from '../../components/Inputs/Input';
 import SpinnerLoader from '../../components/Loader/SpinnerLoader';
+import axiosInstance from '../../utils/axiosInstance';
+import { API_PATHS } from '../../utils/apiPaths';
 
 const CreateSessionForm = () => {
 
@@ -35,6 +37,39 @@ const CreateSessionForm = () => {
         }
 
         setError("");
+        setIsLoading(true);
+
+        try {
+            // Call AI API to generate questions
+            const aiResponse = await axiosInstance.post(API_PATHS.AI.GENERATE_QUESTIONS, {
+                role,
+                experience,
+                topicsToFocus,
+                numberOfQuestions : 10,
+            });
+
+            // Should be array like [{question, answer}, ...]
+            const generateQuestions = aiResponse.data;
+
+            const response = await axiosInstance.post(API_PATHS.SESSION.CREATE, {
+                ...formData,
+                questions : generateQuestions,
+            });
+
+            if(response.data?.session?._id){
+                navigate(`/interview-prep/${response.data?.session?._id}`);
+            }
+
+        } catch (error) {
+            if(error.response && error.response.data.message){
+                setError(error.response.data.message);
+            }
+            else{
+                setError("Something went wrong! Please try again.");
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
   return (
