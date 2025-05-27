@@ -43,7 +43,21 @@ const InterviewPrep = () => {
   const generateConceptExplanation = async(question) => {};
 
   // Pin Question
-  const toggleQuestionPinStatus = async(questionId) => {};
+  const toggleQuestionPinStatus = async(questionId) => {
+    try {
+      const response = await axiosInstance.post(API_PATHS.QUESTION.PIN(questionId));
+
+      console.log(response);
+
+      if(response.data && response.data.question){
+        // toast.success("Question Pinned Successfully.")
+        fetchSessionDetailsById();
+      }
+      
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  };
 
   // Add more questions to the session
   const uploadMoreQuestions = async() => {};
@@ -108,6 +122,8 @@ const InterviewPrep = () => {
             </AnimatePresence>
           </div>
         </div>
+
+        
       </div>
     </DashboardLayout>
   );
