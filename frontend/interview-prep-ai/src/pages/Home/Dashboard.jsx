@@ -3,13 +3,14 @@ import { LuPlus } from 'react-icons/lu';
 import {CARD_BG} from "../../utils/data";
 import toast from 'react-hot-toast';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import SummaryCard from '../../components/Cards/SummaryCard';
 import moment from "moment";
 import Modal from '../../components/Modal';
 import CreateSessionForm from './CreateSessionForm';
+import DeleteAlertContent from '../../components/DeleteAlertContent';
 
 const Dashboard = () => {
 
@@ -30,7 +31,23 @@ const Dashboard = () => {
     }
   };
 
-  const deleteSession = async(sessionData) => {};
+  const deleteSession = async(sessionData) => {
+    try {
+
+      await axiosInstance.delete(API_PATHS.SESSION.DELETE(sessionData?._id));
+
+      toast.success("Session Deleted Successfully.");
+      setOpenDeleteAlert({
+        open : false,
+        data : null,
+      });
+
+      fetchAllSessions();
+      
+    } catch (error) {
+      console.error("Error deleting session data: ", error);
+    }
+  };
 
   useEffect(() => {
     fetchAllSessions();
@@ -76,6 +93,21 @@ const Dashboard = () => {
       >
         <div>
           <CreateSessionForm />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={openDeleteAlert?.open}
+        onClose={() => {
+          setOpenDeleteAlert({open : false, data : null});
+        }}
+        title="Delete Alert"
+      >
+        <div className='w-[30vw]'>
+          <DeleteAlertContent 
+            content="Are you sure you want to delete this session details ?"
+            onDelete={() => deleteSession(openDeleteAlert.data)}
+          />
         </div>
       </Modal>
     </DashboardLayout>
